@@ -62,8 +62,11 @@ namespace HazardStats
 
         private static void Out(string? s = null) => Console.WriteLine(s);
 
+        private static double Round(double probability) => Math.Round(probability, 3);
+        private static double RoundProbability(Stat stat) => Round(stat.Probability);
+
         private string? Message(Stat stat)
-            => stat.Probability == 0 ? null : $"{stat.Outcome.ToString()[0]}: {Math.Round(stat.Probability, 3)}";
+            => stat.Probability == 0 ? null : $"{stat.Outcome.ToString()[0]}: {RoundProbability(stat)}";
 
         private IEnumerable<Stat> Stats()
             => Rolls.SelectMany(roll => Outcomes.Select(outcome =>
@@ -92,9 +95,14 @@ namespace HazardStats
                 Probability = stats.Where(stat => stat.Outcome == outcome).Sum(stat => stat.Probability)
             });
 
-            foreach (var total in outcomeStats) Out($"{total.Outcome}: {total.Probability}");
+            foreach (var stat in outcomeStats) Out($"{stat.Outcome}: {RoundProbability(stat)}");
 
             Out($"Total: {stats.Sum(s => s.Probability)}");
+
+            var edge = outcomeStats.Single(stat => stat.Outcome == Outcome.Loss).Probability -
+                outcomeStats.Single(stat => stat.Outcome == Outcome.Win).Probability;
+
+            Out($"Edge: {Round(edge * 100)}%");
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace HazardStats
+﻿namespace HazardStats
 {
     class Program
     {
