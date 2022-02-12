@@ -17,6 +17,8 @@ namespace HazardStats
 
         private static IEnumerable<int> Rolls => Enumerable.Range(2, 11);
 
+        private static IEnumerable<Outcome> Outcomes => new[] { Outcome.Win, Outcome.Loss };
+
         private static int Ways(int roll) => 
             !Rolls.Contains(roll) ? throw new ArgumentException($"Invalid {nameof(roll)}: {roll}") :
             roll <= 7 ? roll - 1 : 13 - roll;
@@ -60,32 +62,29 @@ namespace HazardStats
 
         private static void Out(string? s = null) => Console.WriteLine(s);
 
-        private string? Message(double prob, Outcome outcome)
-            => prob == 0 ? null : $"{outcome.ToString()[0]}: {Math.Round(prob, 3)}";
-        
+        private string? Message(Stat stat)
+            => stat.Probability == 0 ? null : $"{stat.Outcome.ToString()[0]}: {Math.Round(stat.Probability, 3)}";
+
+        private IEnumerable<Stat> Stats()
+            => Rolls.SelectMany(roll => Outcomes.Select(outcome =>
+                new Stat { Roll = roll, Outcome = outcome, Probability = Probability(roll, outcome) }));
+
+        private string StatLine(IGrouping<int, Stat> group)
+        {
+            var msgs = group.Select(Message).Where(m => m != null);
+            var msg = string.Join("; ", msgs);
+            return $"{group.Key}: {msg}";
+        }
 
         public void OutStats()
         {
             Out($"Main: {_mainNumber}");
             Out();
 
-            var total = 0.0;
-            foreach (var roll in Rolls)
-            {
-                var stats = (new[] { Outcome.Win, Outcome.Loss })
-                    .Select(outcome =>
-                    {
-                        var prob = Probability(roll, outcome);
-                        return new { Prob = prob, Msg = Message(prob, outcome) };
-                    });
-
-                total += stats.Sum(s => s.Prob);
-                var msgs = stats.Select(p => p.Msg).Where(m => m != null);
-                   
-                var msg = string.Join("; ", msgs);
-                Out($"{roll}: {msg}");
-            }
-
+            var stats = Stats().ToArray();
+            var total = stats.Sum(s => s.Probability);
+            var lines = stats.GroupBy(s => s.Roll).Select(StatLine);
+            foreach (var line in lines) Out(line);
             Out();
             Out($"Total: {total}");
         }
