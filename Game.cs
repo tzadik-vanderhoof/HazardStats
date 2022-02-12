@@ -58,24 +58,36 @@ namespace HazardStats
 
         private static int UnitsRisked(int roll) => 1;
 
-        private static void Out(string s) => Console.WriteLine(s);
+        private static void Out(string? s = null) => Console.WriteLine(s);
 
-        private string? ProbabilityMsg(int roll, Outcome outcome)
-        {
-            var prob =  Math.Round(Probability(roll, outcome), 3);
-            return prob == 0 ? null : $"{outcome.ToString()[0]}: {prob}";
-        }
+        private string? Message(double prob, Outcome outcome)
+            => prob == 0 ? null : $"{outcome.ToString()[0]}: {Math.Round(prob, 3)}";
+        
 
-        public void Out()
+        public void OutStats()
         {
+            Out($"Main: {_mainNumber}");
+            Out();
+
+            var total = 0.0;
             foreach (var roll in Rolls)
             {
-                var msgs = (new[] { Outcome.Win, Outcome.Loss })
-                    .Select(o => ProbabilityMsg(roll, o))
-                    .Where(m => m != null);
+                var stats = (new[] { Outcome.Win, Outcome.Loss })
+                    .Select(outcome =>
+                    {
+                        var prob = Probability(roll, outcome);
+                        return new { Prob = prob, Msg = Message(prob, outcome) };
+                    });
+
+                total += stats.Sum(s => s.Prob);
+                var msgs = stats.Select(p => p.Msg).Where(m => m != null);
+                   
                 var msg = string.Join("; ", msgs);
                 Out($"{roll}: {msg}");
             }
+
+            Out();
+            Out($"Total: {total}");
         }
     }
 }
