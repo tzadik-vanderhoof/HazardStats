@@ -15,19 +15,18 @@ namespace HazardStats
             _mainNumber = mainNumber;
         }
 
-        private static IEnumerable<int> Rolls => Enumerable.Range(2, 12);
+        private static IEnumerable<int> Rolls => Enumerable.Range(2, 11);
 
         private static int Ways(int roll) => 
             !Rolls.Contains(roll) ? throw new ArgumentException($"Invalid {nameof(roll)}: {roll}") :
             roll <= 7 ? roll - 1 : 13 - roll;
 
-        private static double Probability(int roll) => Ways(roll) / 36;
+        private static double Probability(int roll) => (double)Ways(roll) / 36;
 
         private double Probability(int roll, Outcome outcome) =>
-            IsCraps(roll) && outcome == Outcome.Loss ? Probability(roll) :
+            IsCraps(roll) ? (outcome == Outcome.Loss ? Probability(roll) : 0) :
             IsPoint(roll) ? Probability(roll) * PointProbability(roll, outcome) :
-            outcome == Outcome.Win ? Probability(roll) :
-            0;
+            outcome == Outcome.Win ? Probability(roll) : 0;
 
         private double PointProbability(int roll, Outcome outcome)
         {
@@ -39,7 +38,7 @@ namespace HazardStats
                 Outcome.Loss => lossWays,
                 _ => 0
             };
-            return outcomeWays / (winWays + lossWays);
+            return (double)outcomeWays / (winWays + lossWays);
         }
 
         private bool IsCraps(int roll) => CrapsRolls().Contains(roll);
@@ -61,9 +60,22 @@ namespace HazardStats
 
         private static void Out(string s) => Console.WriteLine(s);
 
-        public void Test()
+        private string? ProbabilityMsg(int roll, Outcome outcome)
         {
+            var prob =  Math.Round(Probability(roll, outcome), 3);
+            return prob == 0 ? null : $"{outcome.ToString()[0]}: {prob}";
+        }
 
+        public void Out()
+        {
+            foreach (var roll in Rolls)
+            {
+                var msgs = (new[] { Outcome.Win, Outcome.Loss })
+                    .Select(o => ProbabilityMsg(roll, o))
+                    .Where(m => m != null);
+                var msg = string.Join("; ", msgs);
+                Out($"{roll}: {msg}");
+            }
         }
     }
 }

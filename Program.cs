@@ -7,6 +7,8 @@ namespace HazardStats
     {
         static void Main(string[] args)
         {
+            var game = new Game(7);
+            game.Out();
         }
     }
 }
