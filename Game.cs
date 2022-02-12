@@ -82,11 +82,19 @@ namespace HazardStats
             Out();
 
             var stats = Stats().ToArray();
-            var total = stats.Sum(s => s.Probability);
             var lines = stats.GroupBy(s => s.Roll).Select(StatLine);
             foreach (var line in lines) Out(line);
             Out();
-            Out($"Total: {total}");
+
+            var outcomeStats = Outcomes.Select(outcome => new Stat
+            {
+                Outcome = outcome,
+                Probability = stats.Where(stat => stat.Outcome == outcome).Sum(stat => stat.Probability)
+            });
+
+            foreach (var total in outcomeStats) Out($"{total.Outcome}: {total.Probability}");
+
+            Out($"Total: {stats.Sum(s => s.Probability)}");
         }
     }
 }
