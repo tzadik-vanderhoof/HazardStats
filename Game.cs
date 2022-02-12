@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CrapsStats
+namespace HazardStats
 {
     class Game
     {
@@ -17,9 +15,13 @@ namespace CrapsStats
             _mainNumber = mainNumber;
         }
 
-        private int Ways(int roll) => roll <= 7 ? roll - 1 : 13 - roll;
+        private static IEnumerable<int> Rolls => Enumerable.Range(2, 12);
 
-        private double Probability(int roll) => Ways(roll) / 36;
+        private static int Ways(int roll) => 
+            !Rolls.Contains(roll) ? throw new ArgumentException($"Invalid {nameof(roll)}: {roll}") :
+            roll <= 7 ? roll - 1 : 13 - roll;
+
+        private static double Probability(int roll) => Ways(roll) / 36;
 
         private double Probability(int roll, Outcome outcome) =>
             IsCraps(roll) && outcome == Outcome.Loss ? Probability(roll) :
@@ -30,10 +32,15 @@ namespace CrapsStats
         private double PointProbability(int roll, Outcome outcome)
         {
             var winWays = Ways(roll);
-            var loseWays = Ways(_mainNumber);
-            return winWays / (winWays + loseWays);
+            var lossWays = Ways(_mainNumber);
+            var outcomeWays = outcome switch
+            {
+                Outcome.Win => winWays,
+                Outcome.Loss => lossWays,
+                _ => 0
+            };
+            return outcomeWays / (winWays + lossWays);
         }
-
 
         private bool IsCraps(int roll) => CrapsRolls().Contains(roll);
 
@@ -48,10 +55,15 @@ namespace CrapsStats
 
         private bool IsPoint(int roll) => roll >= 4 && roll <= 10 && roll != _mainNumber;
 
-        private int Value(int roll, Outcome outcome) => outcome == Outcome.Win ? 1 : -1;  
+        private static int Value(int roll, Outcome outcome) => outcome == Outcome.Win ? 1 : -1;  
 
-        private int UnitsRisked(int roll) => 1;
+        private static int UnitsRisked(int roll) => 1;
 
+        private static void Out(string s) => Console.WriteLine(s);
 
+        public void Test()
+        {
+
+        }
     }
 }

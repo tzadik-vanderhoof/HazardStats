@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace CrapsStats
+namespace HazardStats
 {
     class Program
     {
