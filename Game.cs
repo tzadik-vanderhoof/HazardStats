@@ -76,7 +76,7 @@ namespace HazardStats
         {
             var msgs = group.Select(Message).Where(m => m != null);
             var msg = string.Join("; ", msgs);
-            return $"{group.Key}: {msg}";
+            return $"{group.Key,2}: {msg}";
         }
 
         public void OutStats()
@@ -95,9 +95,7 @@ namespace HazardStats
                 Probability = stats.Where(stat => stat.Outcome == outcome).Sum(stat => stat.Probability)
             });
 
-            foreach (var stat in outcomeStats) Out($"{stat.Outcome}: {RoundProbability(stat)}");
-
-            Out($"Total: {stats.Sum(s => s.Probability)}");
+            foreach (var stat in outcomeStats) Out($"{stat.Outcome,4}: {RoundProbability(stat)}");
 
             var edge = outcomeStats.Single(stat => stat.Outcome == Outcome.Loss).Probability -
                 outcomeStats.Single(stat => stat.Outcome == Outcome.Win).Probability;

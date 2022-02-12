@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HazardStats": {
+      "commandName": "Project",
+      "commandLineArgs": "7"
+    }
+  }
+}
