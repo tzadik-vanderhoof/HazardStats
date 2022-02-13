@@ -75,13 +75,12 @@ namespace HazardStats
 
         private int UnitsRisked(int roll) => 1 + XOdds(roll);
 
-        private int XOdds(int roll) => roll switch
-        {
-            4 or 10 => 3,
-            5 or  9 => 4,
-            6 or  8 => 5,
-            _  => 0
-        };
+        private int XOdds(int roll) =>
+            Category(roll) switch
+            {
+                RollCategory.Point => 1,
+                _ => 0
+            };
 
         private static void Out(string? s = null) => Console.WriteLine(s);
 
