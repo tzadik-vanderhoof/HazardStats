@@ -78,7 +78,7 @@ namespace HazardStats
         private int XOdds(int roll) =>
             Category(roll) switch
             {
-                RollCategory.Point => 1,
+                RollCategory.Point => 0,
                 _ => 0
             };
 
@@ -87,8 +87,9 @@ namespace HazardStats
         private static double Round(double n) => Math.Round(n, 2);
         private static string Pct(double n) => $"{Round(n * 100)}%";
 
-        private string? Message(Stat stat)
-            => stat.Probability == 0 ? null : $"{stat.Outcome.ToString()[0]}: {Pct(stat.Probability)}";
+        private string? ProbMessage(Stat stat) => 
+            stat.Probability == 0 ? null :
+            $"{stat.Outcome.ToString()[0]}: {Pct(stat.Probability)}";
 
         private IEnumerable<Stat> Stats()
             => Rolls.SelectMany(roll =>
@@ -103,9 +104,10 @@ namespace HazardStats
 
         private string StatLine(IGrouping<int, Stat> group)
         {
-            var msgs = group.Select(Message).Where(m => m != null);
-            var msg = string.Join("; ", msgs);
-            return $"{group.Key,2}: {msg}";
+            var probMsg = string.Join("; ", group.Select(ProbMessage).Where(m => m != null));
+            var value = group.Sum(stat => Round(stat.Value * stat.Probability));
+            var unitsRisked = group.Sum(stat => stat.UnitsRisked * stat.Probability);
+            return $"{group.Key,2}: {probMsg}; Value: {Round(value/unitsRisked)}";
         }
 
         public void OutStats()
@@ -130,7 +132,6 @@ namespace HazardStats
 
             foreach (var stat in outcomeStats) Out($"{stat.Outcome,4}: {Pct(stat.Probability)}");
             Out();
-
 
             // house edge
             const int scale = 1980;
