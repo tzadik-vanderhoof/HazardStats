@@ -70,17 +70,16 @@ namespace HazardStats
                 _ => RollCategory.Point
             };
 
-        private static int Value(int roll, Outcome outcome) => outcome == Outcome.Win ? 1 : -1;  
+        private static int Value(int roll, Outcome outcome) => outcome == Outcome.Win ? 2 : 0;  
 
         private static int UnitsRisked(int roll) => 1;
 
         private static void Out(string? s = null) => Console.WriteLine(s);
 
-        private static double Round(double probability) => Math.Round(probability, 3);
-        private static double RoundProbability(Stat stat) => Round(stat.Probability);
+        private static string Pct(double n) => $"{Math.Round(n * 100, 2)}%";
 
         private string? Message(Stat stat)
-            => stat.Probability == 0 ? null : $"{stat.Outcome.ToString()[0]}: {RoundProbability(stat)}";
+            => stat.Probability == 0 ? null : $"{stat.Outcome.ToString()[0]}: {Pct(stat.Probability)}";
 
         private IEnumerable<Stat> Stats()
             => Rolls.SelectMany(roll =>
@@ -120,12 +119,20 @@ namespace HazardStats
                     Probability = g.Sum(stat => stat.Probability)
                 });
 
-            foreach (var stat in outcomeStats) Out($"{stat.Outcome,4}: {RoundProbability(stat)}");
+            foreach (var stat in outcomeStats) Out($"{stat.Outcome,4}: {Pct(stat.Probability)}");
+            Out();
 
-            var edge = outcomeStats.Single(stat => stat.Outcome == Outcome.Loss).Probability -
-                outcomeStats.Single(stat => stat.Outcome == Outcome.Win).Probability;
 
-            Out($"Edge: {Round(edge * 100)}%");
+            // house edge
+            var totalRisk = stats.Sum(stat => stat.Probability * stat.UnitsRisked);
+            Out($"Total risk: {Pct(totalRisk)}");
+
+            var totalValue = stats.Sum(stat => stat.Probability * stat.Value);
+            Out($"Total value: {Pct(totalValue)}");
+
+            var edge = (totalRisk - totalValue) / totalRisk;
+            Out($"Edge: {Pct(edge)}");
+
         }
     }
 }
