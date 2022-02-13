@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-//TODO: use Value, Don'ts, adjust Value on 12, odds, other bets
+//TODO: odds, Don'ts, adjust Value on 12, other bets
 
 namespace HazardStats
 {
@@ -70,9 +70,18 @@ namespace HazardStats
                 _ => RollCategory.Point
             };
 
-        private static int Value(int roll, Outcome outcome) => outcome == Outcome.Win ? 2 : 0;  
+        private double Value(int roll, Outcome outcome) =>
+            outcome == Outcome.Win ? UnitsRisked(roll) + 1 + (double)XOdds(roll) * Ways(_mainNumber) / Ways(roll) : 0;  
 
-        private static int UnitsRisked(int roll) => 1;
+        private int UnitsRisked(int roll) => 1 + XOdds(roll);
+
+        private int XOdds(int roll) => roll switch
+        {
+            4 or 10 => 3,
+            5 or  9 => 4,
+            6 or  8 => 5,
+            _  => 0
+        };
 
         private static void Out(string? s = null) => Console.WriteLine(s);
 
@@ -125,7 +134,7 @@ namespace HazardStats
 
 
             // house edge
-            const int scale = 1000;
+            const int scale = 1980;
             var totalRisk = stats.Sum(stat => stat.Probability * stat.UnitsRisked) * scale;
             Out($"Total risk: ${Round(totalRisk)}");
 
