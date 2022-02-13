@@ -2,7 +2,7 @@
   "profiles": {
     "HazardStats": {
       "commandName": "Project",
-      "commandLineArgs": "9"
+      "commandLineArgs": "7"
     }
   }
 }

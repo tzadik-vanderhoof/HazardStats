@@ -76,7 +76,8 @@ namespace HazardStats
 
         private static void Out(string? s = null) => Console.WriteLine(s);
 
-        private static string Pct(double n) => $"{Math.Round(n * 100, 2)}%";
+        private static double Round(double n) => Math.Round(n, 2);
+        private static string Pct(double n) => $"{Round(n * 100)}%";
 
         private string? Message(Stat stat)
             => stat.Probability == 0 ? null : $"{stat.Outcome.ToString()[0]}: {Pct(stat.Probability)}";
@@ -124,11 +125,12 @@ namespace HazardStats
 
 
             // house edge
-            var totalRisk = stats.Sum(stat => stat.Probability * stat.UnitsRisked);
-            Out($"Total risk: {Pct(totalRisk)}");
+            const int scale = 1000;
+            var totalRisk = stats.Sum(stat => stat.Probability * stat.UnitsRisked) * scale;
+            Out($"Total risk: ${Round(totalRisk)}");
 
-            var totalValue = stats.Sum(stat => stat.Probability * stat.Value);
-            Out($"Total value: {Pct(totalValue)}");
+            var totalValue = stats.Sum(stat => stat.Probability * stat.Value) * scale;
+            Out($"Total value: ${Round(totalValue)}");
 
             var edge = (totalRisk - totalValue) / totalRisk;
             Out($"Edge: {Pct(edge)}");
