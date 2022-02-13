@@ -71,15 +71,29 @@ namespace HazardStats
             };
 
         private double Value(int roll, Outcome outcome) =>
-            outcome == Outcome.Win ? UnitsRisked(roll) + 1 + (double)XOdds(roll) * Ways(_mainNumber) / Ways(roll) : 0;  
+            outcome == Outcome.Win ?
+            (
+                Category(roll) switch {
+                    RollCategory.Point => UnitsRisked(roll) + 1 + (double)XOdds(roll) * Ways(_mainNumber) / Ways(roll),
+                    RollCategory.Natural => UnitsRisked(roll) + 1,
+                    RollCategory.Push => UnitsRisked(roll),
+                    _ => 0
+                }
+            ) :
+            0;
 
-        private int UnitsRisked(int roll) => 1 + XOdds(roll);
+        private int UnitsRisked(int roll) =>
+            Category(roll) switch
+            {
+                RollCategory.Point => 1 + XOdds(roll),
+                _ => 1
+            };
 
         private int XOdds(int roll) =>
             Category(roll) switch
             {
-                RollCategory.Point => 0,
-                _ => 0
+                RollCategory.Point => 2,
+                _ => throw new ArgumentException($"Invalid roll for odds: {roll}")
             };
 
         private static void Out(string? s = null) => Console.WriteLine(s);
