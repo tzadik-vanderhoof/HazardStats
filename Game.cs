@@ -83,8 +83,15 @@ namespace HazardStats
             => stat.Probability == 0 ? null : $"{stat.Outcome.ToString()[0]}: {RoundProbability(stat)}";
 
         private IEnumerable<Stat> Stats()
-            => Rolls.SelectMany(roll => Outcomes.Select(outcome =>
-                new Stat { Roll = roll, Outcome = outcome, Probability = Probability(roll, outcome) }));
+            => Rolls.SelectMany(roll =>
+                Outcomes.Select(outcome =>
+                    new Stat { 
+                        Roll = roll,
+                        Outcome = outcome,
+                        Probability = Probability(roll, outcome),
+                        UnitsRisked = UnitsRisked(roll),
+                        Value = Value(roll, outcome)
+                    }));
 
         private string StatLine(IGrouping<int, Stat> group)
         {
@@ -99,15 +106,19 @@ namespace HazardStats
             Out();
 
             var stats = Stats().ToArray();
+
+            // stats by roll
             var lines = stats.GroupBy(s => s.Roll).Select(StatLine);
             foreach (var line in lines) Out(line);
             Out();
 
-            var outcomeStats = Outcomes.Select(outcome => new Stat
-            {
-                Outcome = outcome,
-                Probability = stats.Where(stat => stat.Outcome == outcome).Sum(stat => stat.Probability)
-            });
+            // stats by outcome
+            var outcomeStats = stats.GroupBy(stat => stat.Outcome)
+                .Select(g => new Stat
+                {
+                    Outcome = g.Key,
+                    Probability = g.Sum(stat => stat.Probability)
+                });
 
             foreach (var stat in outcomeStats) Out($"{stat.Outcome,4}: {RoundProbability(stat)}");
 
