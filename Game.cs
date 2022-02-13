@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+//TODO: use Value, Don'ts, adjust Value on 12, odds, other bets
+
 namespace HazardStats
 {
     class Game
@@ -26,10 +28,14 @@ namespace HazardStats
         private static double Probability(int roll) => (double)Ways(roll) / 36;
 
         private double Probability(int roll, Outcome outcome) =>
-            IsCraps(roll) ? (outcome == Outcome.Loss ? Probability(roll) : 0) :
-            IsPoint(roll) ? Probability(roll) * PointProbability(roll, outcome) :
-            outcome == Outcome.Win ? Probability(roll) : 0;
-
+            Category(roll) switch
+            {
+                RollCategory.Craps => outcome == Outcome.Loss ? Probability(roll) : 0,
+                RollCategory.Natural => outcome == Outcome.Win ? Probability(roll) : 0,
+                RollCategory.Point => Probability(roll) * PointProbability(roll, outcome),
+                _  =>  throw new ApplicationException("Unexpected category")
+            };
+    
         private double PointProbability(int roll, Outcome outcome)
         {
             var winWays = Ways(roll);
@@ -43,18 +49,26 @@ namespace HazardStats
             return (double)outcomeWays / (winWays + lossWays);
         }
 
-        private bool IsCraps(int roll) => CrapsRolls().Contains(roll);
+        private RollCategory Category(int roll)
+            => roll switch
+            {
+                2 or 3 => RollCategory.Craps,
 
-        private IEnumerable<int> CrapsRolls()
-        {
-            yield return 2;
-            yield return 3;
+                11 => _mainNumber switch {
+                    7 => RollCategory.Natural,
+                    _ => RollCategory.Craps,
+                },
 
-            if ((new[] { 5, 6, 8, 9 }).Contains(_mainNumber)) yield return 11;
-            if ((new[] { 5, 7, 9 }).Contains(_mainNumber)) yield return 12;
-        }
+                12 => _mainNumber switch
+                {
+                    6 or 8 => RollCategory.Natural,
+                    _ => RollCategory.Craps
+                },
 
-        private bool IsPoint(int roll) => roll >= 4 && roll <= 10 && roll != _mainNumber;
+                var c when c == _mainNumber => RollCategory.Natural,
+
+                _ => RollCategory.Point
+            };
 
         private static int Value(int roll, Outcome outcome) => outcome == Outcome.Win ? 1 : -1;  
 
