@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace HazardStats
 {
@@ -8,7 +9,8 @@ namespace HazardStats
         {
             try
             {
-                var game = new Game(int.Parse(args[0]));
+                var intArgs = args.Select(int.Parse).ToArray();
+                var game = new Game(intArgs[0], intArgs[1]);
                 game.OutStats();
             }
             catch (Exception ex)

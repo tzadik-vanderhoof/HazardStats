@@ -2,19 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 
-//TODO: odds, Don'ts, adjust Value on 12, other bets
+//TODO: odds, Don'ts, adjust Value on 12, roll for main, other bets
 
 namespace HazardStats
 {
     class Game
     {
         private readonly int _mainNumber;
+        private readonly int _xOdds;
 
-        public Game(int mainNumber)
+        public Game(int mainNumber, int xOdds)
         {
             if (mainNumber < 5 || mainNumber > 9) throw new ArgumentException($"Invalid {nameof(mainNumber)}: {mainNumber}");
 
             _mainNumber = mainNumber;
+            _xOdds = xOdds;
         }
 
         private static IEnumerable<int> Rolls => Enumerable.Range(2, 11);
@@ -92,7 +94,7 @@ namespace HazardStats
         private int XOdds(int roll) =>
             Category(roll) switch
             {
-                RollCategory.Point => 2,
+                RollCategory.Point => _xOdds,
                 _ => throw new ArgumentException($"Invalid roll for odds: {roll}")
             };
 
@@ -127,6 +129,7 @@ namespace HazardStats
         public void OutStats()
         {
             Out($"Main: {_mainNumber}");
+            Out($"Odds: {_xOdds}");
             Out();
 
             var stats = Stats().ToArray();
@@ -157,7 +160,6 @@ namespace HazardStats
 
             var edge = (totalRisk - totalValue) / totalRisk;
             Out($"Edge: {Pct(edge)}");
-
         }
     }
 }
