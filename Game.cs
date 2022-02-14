@@ -2,21 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 
-//TODO: odds, Don'ts, adjust Value on 12, roll for main, other bets
+//TODO: roll for main, Don'ts, adjust Value on 12, other bets
 
 namespace HazardStats
 {
     class Game
     {
         private readonly int _mainNumber;
-        private readonly int _xOdds;
+        private readonly OddsStrategy _xOdds;
 
-        public Game(int mainNumber, int xOdds)
+        public Game(int mainNumber, string xOdds)
         {
             if (mainNumber < 5 || mainNumber > 9) throw new ArgumentException($"Invalid {nameof(mainNumber)}: {mainNumber}");
 
             _mainNumber = mainNumber;
-            _xOdds = xOdds;
+            _xOdds = xOdds == "=" ?
+                new OddsStrategy { StrategyType = StrategyType.UniformPayout } :
+                new OddsStrategy { StrategyType = StrategyType.Numeric, NumericOdds = int.Parse(xOdds) };
         }
 
         private static IEnumerable<int> Rolls => Enumerable.Range(2, 11);
@@ -94,7 +96,7 @@ namespace HazardStats
         private int XOdds(int roll) =>
             Category(roll) switch
             {
-                RollCategory.Point => _xOdds,
+                RollCategory.Point => _xOdds.StrategyType == StrategyType.UniformPayout ? Ways(roll) : _xOdds.NumericOdds,
                 _ => throw new ArgumentException($"Invalid roll for odds: {roll}")
             };
 
@@ -129,7 +131,10 @@ namespace HazardStats
         public void OutStats()
         {
             Out($"Main: {_mainNumber}");
-            Out($"Odds: {_xOdds}");
+            var odds = _xOdds.StrategyType == StrategyType.UniformPayout ?
+                $"To Win {Ways(_mainNumber)}" :
+                _xOdds.NumericOdds.ToString();
+            Out($"Odds: {odds}x");
             Out();
 
             var stats = Stats().ToArray();
